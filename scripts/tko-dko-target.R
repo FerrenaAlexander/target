@@ -311,10 +311,9 @@ if(tpm == T){
 
 #### calculate scores ####
 
-# do this before PCA, we want to see how they loook in PCA
-
 
 msigdb <- msigdbr::msigdbr()
+msigdb <- msigdb[,c(3,7)]
 
 #apoptosis, apoptotic, etc
 apoptosis <- msigdb[grepl(pattern='apopt', msigdb$gs_name, ignore.case = T),]
@@ -324,6 +323,18 @@ e2f <- msigdb[grepl(pattern='e2f', msigdb$gs_name, ignore.case = T),]
 
 #stemness...
 stem <- msigdb[grepl(pattern='stem', msigdb$gs_name, ignore.case = T),]
+
+# add os stemness...
+osstem <- readxl::read_excel('data/OSstemnessmarkers_Jichuan2020-10-22.xlsx')
+osstem <- na.omit(osstem$HGNC_parsed)
+osstem <- data.frame(gs_name = 'OS_Stemness',
+                     human_gene_symbol = osstem)
+stem <- rbind(stem, osstem)
+rm(osstem)
+
+# exclude "system"
+stem <- stem[!grepl(pattern='system', stem$gs_name, ignore.case = T),]
+
 
 #skp2?
 skp2 <- msigdb[grepl(pattern='skp2', msigdb$gs_name, ignore.case = T),]
@@ -654,7 +665,7 @@ for(cat in names(catlist)){
     labs(title = 'HR Forest plot, univariate continuous')+
     xlab('Hazard Ratio\nLeft = better survival ; Right = worse survival')
   
-
+  
   
   
   
@@ -680,11 +691,11 @@ for(cat in names(catlist)){
   
   
   if(nrow(dichdf>30)){
-  dichdf <- dichdf[order(dichdf$p),]
-  up <- dichdf[dichdf$HR>1,] ; down <- dichdf[dichdf$HR<1,]
-  up <- up[up$p < 0.05,] ; down <- down[down$p < 0.05,]
-  
-  dichdf <- rbind(up,down)
+    dichdf <- dichdf[order(dichdf$p),]
+    up <- dichdf[dichdf$HR>1,] ; down <- dichdf[dichdf$HR<1,]
+    up <- up[up$p < 0.05,] ; down <- down[down$p < 0.05,]
+    
+    dichdf <- rbind(up,down)
   }
   
   
@@ -708,14 +719,14 @@ for(cat in names(catlist)){
     labs(title = 'HR Forest plot, dichotomized')+
     xlab('Hazard Ratio\nLeft = better survival ; Right = worse survival')
   
-
+  
   
   
   #using significant pathways, save only worthwhile results...
   
   sigpways <- unique(c(univardf$score, dichdf$score))
   
-  message('- Saving significant results')
+  message('\n- Saving significant results')
   
   sigresdir <- paste0(suboutdir, '/pathway-results-sigonly')
   dir.create(sigresdir)
@@ -742,7 +753,7 @@ for(cat in names(catlist)){
                               bind_rows( lapply(models, function(x){as.data.frame( summary(x)$conf.int ) }) )[,3:4] )
     
     
-  
+    
     
     
     #only plot if significant...
@@ -823,7 +834,7 @@ for(cat in names(catlist)){
   
   print(forestunivar)
   print(forestdich)
-  print(pdfplotlist)
+  suppressMessages(print(pdfplotlist))
   
   dev.off()
   
