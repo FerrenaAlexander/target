@@ -339,7 +339,7 @@ p27 <- rbind(p27, msigdb[grepl(pattern='_p27', msigdb$gs_name, ignore.case = T),
 
 
 #senescence...
-senescence <- sigdb[grepl(pattern='senesc', msigdb$gs_name, ignore.case = T),]
+senescence <- msigdb[grepl(pattern='senesc', msigdb$gs_name, ignore.case = T),]
 
 
 rm(msigdb)
