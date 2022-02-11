@@ -439,8 +439,6 @@ dir.create(outdir)
 #loop thru each category...
 
 
-### edited modules
-
 for(cat in names(catlist)){
   
   
