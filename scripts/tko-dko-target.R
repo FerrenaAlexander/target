@@ -453,7 +453,7 @@ for(cat in names(catlist)){
   
   mm <- catlist[[cat]]
   
-  total = ncol(mm) - 1
+  total = ncol(mm)
   pb <- txtProgressBar(min = 0, max = total, style = 3)
   
   
@@ -720,7 +720,7 @@ for(cat in names(catlist)){
   sigresdir <- paste0(suboutdir, '/pathway-results-sigonly')
   dir.create(sigresdir)
   
-  total = length(sigpways) - 1
+  total = length(sigpways)
   pb <- txtProgressBar(min = 0, max = total, style = 3)
   
   
