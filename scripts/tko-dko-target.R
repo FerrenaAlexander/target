@@ -337,6 +337,11 @@ p27 <- rbind(p27, msigdb[grepl(pattern='_p27', msigdb$gs_name, ignore.case = T),
 # p21 <- msigdb[grepl(pattern='p21', msigdb$gs_name, ignore.case = T),]
 # not really any great ones, single one also mentiosn p27
 
+
+#senescence...
+senescence <- sigdb[grepl(pattern='senesc', msigdb$gs_name, ignore.case = T),]
+
+
 rm(msigdb)
 
 
@@ -346,7 +351,8 @@ cats <- list(apoptosis=apoptosis,
              e2f=e2f,
              stem=stem,
              skp2=skp2,
-             p27=p27)
+             p27=p27,
+             senescence=senescence)
 
 rm(apoptosis,e2f,stem,skp2,p27)
 
@@ -415,7 +421,7 @@ doParallel::stopImplicitCluster()
 
 ntests<- sum(sapply(catlist, ncol))
 
-
+rm(cats)
 
 
 
