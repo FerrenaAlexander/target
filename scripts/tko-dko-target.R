@@ -726,6 +726,15 @@ for(cat in names(catlist)){
   
   sigpways <- unique(c(univardf$score, dichdf$score))
   
+  #add any pathways we really want to see
+  selectedpways <- c('OS_Stemness')
+  for(i in selectedpways){
+    #check if in names and if not in sigpways
+    if(i %in% scorenames & !(i %in% sigpways)){
+      sigpways <- c(sigpways, i)
+    }
+  }
+  
   message('\n- Saving significant results')
   
   sigresdir <- paste0(suboutdir, '/pathway-results-sigonly')
@@ -758,10 +767,11 @@ for(cat in names(catlist)){
     
     #only plot if significant...
     # ignore met
-    pvals <- summarytable$`Pr(>|z|)`[-(nrow(summarytable))]
-    if( !any(pvals < 0.10) ){
-      next
-    }
+    # pvals <- summarytable$`Pr(>|z|)`[-(nrow(summarytable))]
+    # if( !any(pvals < 0.10) ){
+    #   next
+    # }
+    # this is defined by sigpways, not necessary
     
     #rename the continuous
     rownames <- rownames(summarytable)
@@ -845,4 +855,13 @@ for(cat in names(catlist)){
 }
 
 beepr::beep(3)
+
+
+
+
+
+#last followup:
+# test just aldh, prom1, kit
+
+
 
