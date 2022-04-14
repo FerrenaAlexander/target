@@ -463,7 +463,8 @@ time <- 'Vital_status_time'
 
 
 #set outdir
-outdir <- 'survivalanalysis/vital_status-tkodkobulk'
+# outdir <- 'survivalanalysis/vital_status-tkodkobulk'
+outdir <- 'survivalanalysis/vital_status-tkodkobulk_noquantnorm'
 dir.create(outdir)
 
 
@@ -474,11 +475,11 @@ dir.create(outdir)
 
 ### editied modules
 
-suboutdir <- paste0(outdir, '/modulescores_subsets')
+suboutdir <- paste0(outdir, '/modulescores')
 dir.create(suboutdir)
 
 #get module score names
-scorenames <- names(editedmodules)
+scorenames <- names(mm)
 
 plotlist <- list()
 modellist <- list()
@@ -743,8 +744,8 @@ for(scorename in scorenames){
   
   gterc <- ggsurvplot(fit,
                       conf.int = F,
-                      pval = TRUE, pval.coord = c(3, 0.9),
-                      pval.method = T, pval.method.coord = c(3, 1),
+                      pval = TRUE, #pval.coord = c(3, 0.9),
+                      pval.method = T, #pval.method.coord = c(3, 1),
                       linetype = "strata",  
                       test.for.trend = T,
                       title=scorename,
@@ -757,8 +758,8 @@ for(scorename in scorenames){
   
   gdich <- ggsurvplot(fit,
                       conf.int = F,
-                      pval = TRUE, pval.coord = c(3, 0.9),
-                      pval.method = T, pval.method.coord = c(3, 1),
+                      pval = TRUE, #pval.coord = c(3, 0.9),
+                      pval.method = T, #pval.method.coord = c(3, 1),
                       linetype = "strata",  
                       test.for.trend = F,
                       title=scorename,

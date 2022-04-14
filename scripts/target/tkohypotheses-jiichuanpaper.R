@@ -137,7 +137,7 @@ modulescore <- function(gem, genelist, numbins=NULL, numcontrolgenesperbin=NULL)
 
 
 #tpm or counts
-tpm = F
+tpm = T
 
 
 if(tpm == T){
@@ -332,13 +332,14 @@ outdir <- 'survivalanalysis/vital_status-tkohypotheses'
 # the stemness genes from the DKOAA paper
 
 
-suboutdir <- paste0(outdir, '/', 'individualgenes_noskp2')
+suboutdir <- paste0(outdir, '/', 'followup_final')
 dir.create(suboutdir)
 
 
 
 #make the list of genes
-genes <- c('SKP2', 'CDKN1A', 'CDKN1B')
+#genes <- c('SKP2', 'CDKN1A', 'CDKN1B')
+genes <- c()
 
 e2f <- rownames(gem)[grepl('^E2f', rownames(gem), ignore.case = T)]
 e2f <- str_sort(e2f, numeric = T)
@@ -364,6 +365,26 @@ mm <- as.data.frame(scale(mm))
 
 
 
+#also, add module score of stemness genes to this...
+
+keystemgenes <- c('PROM1', "ALDH1A1", "ALDH2", "ALDH7A1", 'KIT')
+mm <- cbind(mm, data.frame(OS_Stemness_Validated = modulescore(gem, keystemgenes)))
+
+
+
+
+#lets also retry the reactome apoptosis
+
+msigdb <- msigdbr::msigdbr()
+msigdb <- msigdb[,c(3,7)]
+
+#apoptosis, apoptotic, etc
+apoptosis <- msigdb[grepl(pattern='REACTOME_APOPTOSIS', msigdb$gs_name, ignore.case = T),]
+rm(msigdb)
+
+mm <- cbind(mm, data.frame(REACTOME_APOPTOSIS = modulescore(gem, apoptosis$human_gene_symbol)) )
+
+
 total = ncol(mm)
 pb <- txtProgressBar(min = 0, max = total, style = 3)
 
@@ -381,6 +402,7 @@ scorenames <- names(mm)
 
 plotlist <- list()
 modellist <- list()
+datalist <- list() #we need to save data and load it into the env to make model diagnoastics work...
 
 for(scoreidx in 1:length(scorenames)) {
   
@@ -507,7 +529,7 @@ for(scoreidx in 1:length(scorenames)) {
   #temporarily save outs to plot list...
   plotlist[[scorename]] <- plots
   modellist[[scorename]] <- models
-  
+  datalist[[scorename]] <- df
   
   
   setTxtProgressBar(pb, scoreidx)
@@ -642,7 +664,7 @@ forestdich <- ggplot(dichdf, aes(y = score_rename, x = HR, xmin=lower95, xmax=up
 #   }
 # }
 
-sigpways <- genes
+sigpways <- scorenames
 
 message('\n- Saving significant results')
 
@@ -657,10 +679,15 @@ pb <- txtProgressBar(min = 0, max = total, style = 3)
 pdfplotlist <- list()
 for(scoreidx in 1:length(sigpways) ){
   
+  
+
   score <- sigpways[scoreidx]
+  #message(score)
   
   #get models
   models <- modellist[[score]]
+  df <- datalist[[score]] #load data into env or else, the diagnostics break
+  
   #get plots
   plots <- plotlist[[score]]
   
@@ -702,7 +729,7 @@ for(scoreidx in 1:length(sigpways) ){
   summarytable[summarytable$`Pr(>|z|)` < 0.001, "significance"] <- '***'
   
   #round table
-  summarytable[,-ncol(summarytable)] <- round( summarytable[,-ncol(summarytable)],2 )
+  summarytable[,-ncol(summarytable)] <- round( summarytable[,-ncol(summarytable)],3 )
   
   # plot it all together
   updatedplot <- (plots[[1]] + plots[[2]]) / ( gridExtra::tableGrob(summarytable)) + patchwork::plot_annotation(score) + 
@@ -720,18 +747,18 @@ for(scoreidx in 1:length(sigpways) ){
   
   # saveRDS( file = paste0(resultdir, '/models.rds'), models  )
   
-  
+
   #check model assumptions...
   modeldiagnosticsfile <- paste0(resultdir, '/modeldiagnostics.pdf')
   pdf(modeldiagnosticsfile, height = 10, width = 10)
   for(model in models){
-    
+
     print( ggcoxzph( cox.zph(model) ) )
-    
+
   }
   dev.off()
-  
-  
+
+
   #save plots
   
   
