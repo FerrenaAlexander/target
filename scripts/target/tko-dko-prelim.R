@@ -45,7 +45,7 @@ while(is(mouse) != 'Mart'){ mouse = try( useMart("ensembl", dataset = "mmusculus
 
 
 convertMouseGeneList <- function(genelist){
-  require("biomaRt")
+  #require("biomaRt")
   
   
   genesV2 = getLDS(attributes = c("mgi_symbol"), 

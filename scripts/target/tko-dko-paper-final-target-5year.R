@@ -312,6 +312,21 @@ clindat <- clindat[complete.cases(clindat),]
 
 
 
+
+#cap at 5 years
+# set time above 5 to just 5
+# also we need to censor after 5 years before doing that
+
+clindat[clindat$First_event_time >5,'First_event'] <- 'Censored'
+clindat[clindat$First_event_time >5,'First_event_time'] <- 5
+
+
+clindat[clindat$Vital_status_time >5,'Vital_status'] <- 'Censored'
+clindat[clindat$Vital_status_time >5,'Vital_status_time'] <- 5
+
+
+
+
 #remove samples missing survival
 
 sdf <- sdf[match(clindat$Sample, sdf$cases),]
@@ -560,8 +575,7 @@ time <- 'Vital_status_time'
 
 
 #set outdir
-# outdir <- 'survivalanalysis/vital_status-tkodkobulk'
-outdir <- 'survivalanalysis/target/final_target_tkodkobulkpaper'
+outdir <- 'survivalanalysis/target/final_target_tkodkobulkpaper_5year'
 dir.create(outdir)
 
 
