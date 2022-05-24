@@ -37,58 +37,9 @@ set.seed(2020)
 #set up biomart function for mouse to human
 human = NULL; mouse = NULL
 
-while(is(human) != 'Mart'){ human = try( useMart("ensembl", dataset = "hsapiens_gene_ensembl",  host = "https://dec2021.archive.ensembl.org/")) }
+while(is(human) != 'Mart'){ human = try( useMart("ensembl", dataset = "hsapiens_gene_ensembl",  host = "http://feb2021.archive.ensembl.org/")) }
 
-while(is(mouse) != 'Mart'){ mouse = try( useMart("ensembl", dataset = "mmusculus_gene_ensembl", host = "https://dec2021.archive.ensembl.org/")) }
-
-
-
-
-convertMouseGeneList <- function(genelist){
-  #require("biomaRt")
-  
-  
-  genesV2 = getLDS(attributes = c("mgi_symbol"), 
-                   filters = "mgi_symbol", 
-                   values = genelist , 
-                   mart = mouse, 
-                   attributesL = c("hgnc_symbol"), 
-                   martL = human, 
-                   uniqueRows=T)
-  
-  genesV2 
-}
-
-
-
-#read in DE genes
-res <- read.csv('~/Dropbox/data/bangdata/2021october-TKOvsDKO/results/comparative-de/TKO-vs-DKO/2.deresults/DEresults-normalized_count_matrix.csv')
-
-#get only sig res
-res <- res[abs(res$log2FoldChange) > 1 & res$padj < 0.05,]
-
-
-#get the human IDs...
-
-#remove dup genes (if any)
-dups <- names( table(res$mgi_symbol)[table(res$mgi_symbol)>1] )
-res <- res[!(res$mgi_symbol %in% dups),]
-
-
-#get orthologs
-genes <- convertMouseGeneList(res$mgi_symbol)
-
-
-genes <- res$mgi_symbol
-genesV2 = getLDS(attributes = c("mgi_symbol"), 
-                 filters = "mgi_symbol", 
-                 values = genes , 
-                 mart = mouse, 
-                 attributesL = c("hgnc_symbol"), 
-                 martL = human, 
-                 uniqueRows=T)
-
-
+while(is(mouse) != 'Mart'){ mouse = try( useMart("ensembl", dataset = "mmusculus_gene_ensembl", host = "http://feb2021.archive.ensembl.org/")) }
 
 
 
@@ -128,4 +79,5 @@ nodups <- nodups[nodups[,3] %in% third,]
 nodups <- nodups[nodups[,4] %in% fourth,]
 
 
-write.csv('data/biomart_nodups_april18-2022_dec2021archive.csv', x = genesV2,)
+write.csv('data/biomart_nodups_may05-2022_feb2021archive.csv', x = nodups, 
+          row.names = F, quote = F)

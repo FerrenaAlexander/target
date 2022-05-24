@@ -5,9 +5,6 @@ library(survminer)
 library(DESeq2)
 library(patchwork)
 
-library(foreach)
-library(doParallel)
-
 library(biomaRt) #mouse-human homologs
 
 library(MCPcounter) #for calculating microenv scores in human
@@ -16,52 +13,31 @@ set.seed(2020)
 
 
 
+### final followup from tko vs dko bulk rnaseq paper
+
+#Multivar survival model 
+# with both monocyte MCP score AND 
+# TKO overexp gene list
+
+
+#Subtract myeloid genes from TKO: 
+# remove DE genes present in msigdb myeloid pathways, 
+# check survival
+
+
+
+
+
+
+
 
 #### prep run #####
 
 #biomart literally failed completely, wonderful
 
-### as of 2022/04/14 we use the MGI homology table
-#get orthologs
-#genes <- convertMouseGeneList(res$mgi_symbol)
-# downloaded MGI HOMOLOGY TABLE 2022/04/14
-genes <- read.table('data/mousehumanhomologs/HOM_MouseHumanSequence.rpt', header = T, sep='\t')
-mouse <- genes[genes$Common.Organism.Name=='mouse, laboratory',c('DB.Class.Key', 'Symbol', 'EntrezGene.ID')]
-human <- genes[genes$Common.Organism.Name=='human',c('DB.Class.Key', 'Symbol', 'EntrezGene.ID')]
+### as of 2022/05/05 we use biomart archive from feb2022, when we did the analysis to begin with...
 
-rm(genes)
-
-#make sure IDs are shared...
-mouse <- mouse[mouse$DB.Class.Key %in% human$DB.Class.Key,]
-human <- human[human$DB.Class.Key %in% mouse$DB.Class.Key,]
-
-#deal with duplicates???
-# fiest, get MGI of duplicates in any col..., then remove
-first <- names(table(mouse[,1])[table(mouse[,1])>1])
-second <- names(table(mouse[,2])[table(mouse[,2])>1])
-third <- names(table(mouse[,3])[table(mouse[,3])>1])
-mouse <- mouse[!(mouse[,1] %in% first | mouse[,2] %in% second | mouse[,3] %in% third),]
-
-first <- names(table(human[,1])[table(human[,1])>1])
-second <- names(table(human[,2])[table(human[,2])>1])
-third <- names(table(human[,3])[table(human[,3])>1])
-human <- human[!(human[,1] %in% first | human[,2] %in% second | human[,3] %in% third),]
-
-#match up the mouse and human homology keys again?
-#make sure IDs are shared...
-mouse <- mouse[mouse$DB.Class.Key %in% human$DB.Class.Key,]
-human <- human[human$DB.Class.Key %in% mouse$DB.Class.Key,]
-
-#match up human and mouse; may already be matched, but do it just iin case
-mouse <- mouse[match(human$DB.Class.Key, mouse$DB.Class.Key),]
-
-hom <- data.frame(DB.Class.Key = human$DB.Class.Key,
-                  MGI.symbol = mouse$Symbol, MGI.entrez = mouse$EntrezGene.ID,
-                  HGNC.symbol = human$Symbol, HGNC.entrez = human$EntrezGene.ID)
-
-
-rm(human,mouse,first,second,third)
-
+hom <- read.csv('data/biomart_nodups_may05-2022_feb2021archive.csv')
 
 
 
@@ -369,7 +345,7 @@ rm(gemt)
 #perform batch correction, no log though
 gem <- as.matrix(gem)
 
-gem_limma <- limma::removeBatchEffect(log2(gem+1), batch = md$lab)
+gem_limma <- limma::removeBatchEffect(gem, batch = md$lab)
 
 gem_limma <- as.matrix(gem_limma)
 
@@ -589,8 +565,7 @@ time <- 'Vital_status_time'
 
 
 #set outdir
-# outdir <- 'survivalanalysis/vital_status-tkodkobulk'
-outdir <- 'survivalanalysis/kuijjer/final_kuijjer_tkodkobulkpaper_5year'
+outdir <- 'survivalanalysis/FINAL_TKO_VS_DKO/final_kuijjer_tkodkobulkpaper_5year'
 dir.create(outdir)
 
 
